@@ -1,0 +1,64 @@
+public class treenodes {
+    /* Wrapper class to contain the nodes and their children */
+    public class cNodes {
+        public List<ContentDocumentLink> parent {get; set;}
+        public CollaborationGroup gparent {get;set;}
+        public List<ContentDocument> cd {get; set;}
+        
+        public cNodes(CollaborationGroup gp, List<ContentDocumentLink> p, List<ContentDocument> li) {      
+            parent = p;      
+            gparent = gp;
+            cd = li;
+        } 
+    }
+
+    /* end of Wrapper class */
+    public List<cNodes> hierarchy;
+    public List<cNodes> getmainnodes() {
+        hierarchy = new List<cNodes>();
+        
+        String query = (sortBy == null || sortBy.equals('None')) ? 'SELECT Id, Name FROM CollaborationGroup' : 'SELECT Id, Name FROM CollaborationGroup WHERE CollaborationType = \''+ sortBy +'\'';
+        List<CollaborationGroup> tempparent = Database.query(query);  // acquire the chatter group ID and name        
+            
+        // acquire the file Id and group ID from the ContentDocumentLink
+        for (Integer i =0; i< tempparent.size() ; i++) {
+            List<ContentDocumentLink> tempchildren = [SELECT ContentDocumentId, LinkedEntityId FROM ContentDocumentLink WHERE LinkedEntityId = :tempparent[i].Id];
+            
+            List<ContentDocument> tempCd = new List<ContentDocument>();
+            for (Integer j =0; j < tempchildren.size(); j++) {  // acquire name of the file using contentDocumentId
+                if (sortBy == null || sortBy.equals('None') || sortBy.equals('Public') || sortBy.equals('Private')) {
+                    tempCd.add([SELECT Title, Id, FileType FROM ContentDocument WHERE Id = :tempchildren[j].ContentDocumentId]);
+                } else {
+                    tempCd.add([SELECT Title, Id, FileType FROM ContentDocument WHERE Id =:tempchildren[j].ContentDocumentId AND FileType = :sortBy]);
+                }
+            }
+            System.debug('  TempCd content is: ' + tempCd + '     tempCd size is: ' + tempCd.size() );
+            hierarchy.add(new cNodes(tempparent[i], tempchildren, tempCd));
+        }
+        return hierarchy;
+    }
+    
+    public String sortBy {get;set;}
+    public List<SelectOption> getItems() {
+        List<SelectOption> options = new List<SelectOption>();
+        options.add(new SelectOption('None','None'));
+        options.add(new SelectOption('Public','Public Group'));
+        options.add(new SelectOption('Private','Private Group'));
+        options.add(new SelectOption('PDF','PDF'));
+        options.add(new SelectOption('CSV','CSV'));
+        options.add(new SelectOption('POWER_POINT_X','PPT'));
+        options.add(new SelectOption('JPEG','JPEG'));
+        return options;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+    public void setSortBy(String sortBy) {  // If multiselect is false, countries must be of type String
+        this.sortBy = sortBy;
+    }
+    public PageReference go() {
+        System.debug('testValue'+sortBy);
+        return null ;
+    }
+}

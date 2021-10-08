@@ -1,0 +1,78 @@
+<apex:page controller="treenodes" lightningStyleSheets="true">
+    <head>
+        <!-- Include the Jquery Script files -->    
+        <link rel="stylesheet" href="{!URLFOR($Resource.Jtreeview,'Jquerytreeview/jquery.treeview.css')}"/>   
+        <script src="{!URLFOR($Resource.Jtreeview,'Jquerytreeview/jquery.js')}" type="text/javascript"></script>    
+        <script src="{!URLFOR($Resource.Jtreeview,'Jquerytreeview/jquery.cookie.js')}" type="text/javascript"></script>    
+        <script src="{!URLFOR($Resource.Jtreeview,'Jquerytreeview/jquery.treeview.js')}" type="text/javascript"></script>
+        
+        <meta charset="utf-8" />
+        <meta http-equiv="x-ua-compatible" content="ie=edge" />
+        <title>File Focus</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <apex:slds />
+                    
+        <!-- End of Javascript files -->
+        <script type="text/javascript">        
+            $(function(){            
+                $("#tree").treeview({                
+                    collapsed: true,                
+                    animated: "medium",                
+                    control:"#sidetreecontrol",                
+                    persist: "location"           
+                });})
+        </script>
+    </head>
+        
+    <body>
+        <div>
+            <apex:form >
+                <apex:selectList value="{!sortBy}" multiselect="false" size="1">
+                    <apex:selectOptions value="{!items}"/>
+                    <apex:actionSupport event="onchange" action="{!go}"></apex:actionSupport>
+                </apex:selectList>
+            </apex:form>
+            
+            <apex:outputPanel id="out">
+                <apex:actionstatus id="status" startText="testing...">
+                    <apex:facet name="stop">
+                        <apex:outputPanel >
+                            <p>Sort By:
+                                <apex:dataList value="{!sortBy}" var="s">{!s}</apex:dataList>
+                            </p>
+                        </apex:outputPanel>
+                    </apex:facet>
+                </apex:actionstatus>
+            </apex:outputPanel>
+            
+            <!-- Tree -->
+            <div id="sidetreecontrol">
+                <a href="?#"><font style="color:blue;">Collapse All</font></a> | <a href="?#"><font style="color:blue;">Expand All</font></a>
+            </div>
+            
+            <ul id="tree">
+                <apex:repeat value="{!mainnodes}" var="p">        
+                    <li><strong><a href="https://na174.lightning.force.com/lightning/r/CollaborationGroup/{!p.gparent.Id}/view">
+                        <apex:outputtext style="color:blue;" escape="false" value="{!p.gparent.Name}"/></a></strong>
+                        <ul>                 
+                            <apex:repeat value="{!p.parent}" var="child" rows="1">                    
+                                <li><a href="https://na174.lightning.force.com/lightning/r/ContentDocument/{!child.ContentDocumentId}/view">
+                                    <apex:repeat value="{!p.cd}" var="pcd"> 
+                                        <li>
+                                            <span class="formattextcon">
+                                                <apex:outputtext style="color:green;" escape="false" value="{!pcd.Title}"/>
+                                                <apex:outputText style="color:green;" escape="false">.{!pcd.FileType}</apex:outputText>
+                                            </span>
+                                        </li>
+                                    </apex:repeat>
+                                    </a>
+                                </li>                     
+                            </apex:repeat>               
+                        </ul>          
+                    </li>    
+                </apex:repeat>
+            </ul>
+            <!-- End of Tree -->
+        </div>
+    </body>
+</apex:page>

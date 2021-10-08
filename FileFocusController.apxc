@@ -1,0 +1,14 @@
+public class FileFocusController {
+    
+    public List<sObject> result {set; get;}
+
+    public List<sObject> getResult() {
+        return [SELECT Id, Name From CollaborationGroup] ;
+    }
+
+    public void setResult(List<sObject> param) {
+        this.result = param;
+    }
+}
+
+
